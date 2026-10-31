@@ -12,8 +12,8 @@ jobs:
   web:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -29,7 +29,7 @@ jobs:
             sleep 0.25
           done
           npm run test:browser
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: browser-smoke-screenshots
@@ -38,18 +38,22 @@ jobs:
   android:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: 21
           cache: gradle
       - name: Install Android SDK packages
-        run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+        run: |
+          sdk_root="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+          sdkmanager="$sdk_root/cmdline-tools/latest/bin/sdkmanager"
+          test -x "$sdkmanager"
+          "$sdkmanager" "platforms;android-36" "build-tools;36.0.0"
       - run: npm ci
       - run: npx cap sync android
       - name: Lint, test, and build APK
@@ -57,7 +61,7 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew lintDebug testDebugUnitTest assembleDebug --no-daemon
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: android-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
