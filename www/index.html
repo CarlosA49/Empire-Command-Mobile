@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#071018">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Empire Command">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="description" content="A touch-first pocket 4X strategy game for Android, iPhone, and desktop browsers.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/app-icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.webp">
+  <link rel="stylesheet" href="styles.css">
+  <title>Empire Command Mobile</title>
+</head>
+<body>
+  <div id="app" class="app" aria-live="polite">
+    <header id="topbar" class="topbar hidden">
+      <button id="empire-button" class="identity-button" aria-label="Open empire overview">
+        <span class="identity-mark">A</span>
+        <span class="identity-copy"><strong id="age-label">Age of Origins</strong><small id="turn-label">Turn 1</small></span>
+      </button>
+      <div class="resources" aria-label="Empire resources">
+        <span class="resource gold"><b>●</b><span id="gold-value">0</span></span>
+        <span class="resource science"><b>◆</b><span id="science-value">0</span></span>
+        <span class="resource culture"><b>♥</b><span id="culture-value">0</span></span>
+        <span class="resource influence"><b>✦</b><span id="influence-value">0</span></span>
+      </div>
+      <button id="menu-button" class="icon-button" aria-label="Open menu">☰</button>
+    </header>
+
+    <main id="game-screen" class="game-screen hidden">
+      <canvas id="map" aria-label="Hex world map"></canvas>
+      <div class="map-vignette" aria-hidden="true"></div>
+      <div class="zoom-controls">
+        <button id="zoom-in" aria-label="Zoom in">+</button>
+        <button id="zoom-out" aria-label="Zoom out">−</button>
+        <button id="center-map" aria-label="Center on capital">◎</button>
+      </div>
+      <button id="research-button" class="research-chip">
+        <span class="research-icon">⌬</span>
+        <span><small>Research</small><strong id="research-label">Choose technology</strong></span>
+      </button>
+      <section id="selection-panel" class="selection-panel empty" aria-label="Selected map item">
+        <div class="selection-heading">
+          <span id="selection-symbol" class="selection-symbol">⌖</span>
+          <span class="selection-title"><small id="selection-kicker">EXPLORE</small><strong id="selection-name">Select a unit or city</strong><span id="selection-detail">Tap a hex to inspect it</span></span>
+          <button id="close-selection" class="panel-close" aria-label="Clear selection">×</button>
+        </div>
+        <div id="selection-stats" class="selection-stats"></div>
+        <div id="action-row" class="action-row"></div>
+      </section>
+      <nav class="command-dock" aria-label="Game commands">
+        <button id="log-button"><span>☷</span><small>Chronicle</small></button>
+        <button id="cheat-button" class="command-special"><span>✦</span><small>Command</small></button>
+        <button id="next-unit-button"><span>➤</span><small>Next Unit</small></button>
+        <button id="end-turn-button" class="end-turn"><span>END TURN</span><small id="end-turn-note">Ready</small></button>
+      </nav>
+    </main>
+
+    <section id="start-screen" class="start-screen">
+      <div class="stars"></div>
+      <div class="start-content">
+        <img src="assets/app-icon.svg" class="start-logo" alt="">
+        <p class="eyebrow">A POCKET 4X STRATEGY GAME</p>
+        <h1>EMPIRE<br><span>COMMAND</span></h1>
+        <p class="start-copy">Build cities. Discover new ages. Outthink rival empires. Designed for touch and playable offline.</p>
+        <div class="start-actions">
+          <button id="continue-button" class="primary-button hidden">Continue Campaign</button>
+          <button id="new-game-button" class="secondary-button">New Campaign</button>
+        </div>
+        <p class="unofficial-note">Independent clean-room mobile edition. No original game files are modified.</p>
+      </div>
+    </section>
+
+    <div id="sheet-backdrop" class="sheet-backdrop hidden"></div>
+
+    <section id="new-game-sheet" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="new-game-title">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header"><div><small>BEGIN AN ERA</small><h2 id="new-game-title">New Campaign</h2></div><button class="sheet-close" aria-label="Close">×</button></div>
+      <div class="sheet-body">
+        <label class="field-label">World size</label>
+        <div class="segmented" id="map-size-options">
+          <button data-value="compact">Compact<small>14 × 10</small></button>
+          <button data-value="standard" class="active">Standard<small>18 × 12</small></button>
+          <button data-value="grand">Grand<small>24 × 15</small></button>
+        </div>
+        <label class="field-label">Challenge</label>
+        <div class="choice-list" id="difficulty-options">
+          <button data-value="explorer"><span><strong>Explorer</strong><small>Relaxed expansion and forgiving combat.</small></span><i></i></button>
+          <button data-value="sovereign" class="active"><span><strong>Sovereign</strong><small>Balanced AI and an even contest.</small></span><i></i></button>
+          <button data-value="immortal"><span><strong>Immortal</strong><small>Faster rivals with stronger armies.</small></span><i></i></button>
+        </div>
+        <label class="field-label" for="seed-input">World seed <small>(optional)</small></label>
+        <input id="seed-input" class="text-input" maxlength="32" placeholder="Random world">
+        <button id="begin-campaign" class="primary-button wide">Found Your Empire</button>
+      </div>
+    </section>
+
+    <section id="research-sheet" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="research-title">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header"><div><small>PATH OF KNOWLEDGE</small><h2 id="research-title">Choose Research</h2></div><button class="sheet-close" aria-label="Close">×</button></div>
+      <div id="research-list" class="sheet-body card-list"></div>
+    </section>
+
+    <section id="production-sheet" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="production-title">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header"><div><small>CITY PRODUCTION</small><h2 id="production-title">Choose Project</h2></div><button class="sheet-close" aria-label="Close">×</button></div>
+      <div id="production-list" class="sheet-body card-list"></div>
+    </section>
+
+    <section id="cheat-sheet" class="sheet cheat-sheet hidden" role="dialog" aria-modal="true" aria-labelledby="cheat-title">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header"><div><small>OFFLINE • SINGLE PLAYER</small><h2 id="cheat-title">Command Console</h2></div><button class="sheet-close" aria-label="Close">×</button></div>
+      <div class="sheet-body">
+        <p class="sheet-intro">Every command affects only this local campaign. Toggle commands glow while active.</p>
+        <h3>Treasury & progress</h3>
+        <div class="command-grid">
+          <button data-cheat="gold"><span>●</span><strong>+100K Gold</strong></button>
+          <button data-cheat="influence"><span>✦</span><strong>+10K Influence</strong></button>
+          <button data-cheat="science"><span>◆</span><strong>+100K Science</strong></button>
+          <button data-cheat="culture"><span>♥</span><strong>+100K Culture</strong></button>
+          <button data-cheat="unlockTechs"><span>⌬</span><strong>Unlock All Tech</strong></button>
+          <button data-cheat="completeProduction"><span>⚒</span><strong>Finish Production</strong></button>
+        </div>
+        <h3>Army & world</h3>
+        <div class="command-grid">
+          <button data-cheat="heal"><span>✚</span><strong>Heal All</strong></button>
+          <button data-cheat="movement"><span>➤</span><strong>Restore Movement</strong></button>
+          <button data-cheat="reveal" data-toggle="revealMap"><span>◉</span><strong>Reveal Map</strong></button>
+          <button data-cheat="infiniteMovement" data-toggle="infiniteMovement"><span>∞</span><strong>Infinite Movement</strong></button>
+          <button data-cheat="godMode" data-toggle="godMode"><span>♛</span><strong>God Mode</strong></button>
+          <button data-cheat="oneHit" data-toggle="oneHit"><span>⚡</span><strong>One-Hit Combat</strong></button>
+          <button data-cheat="spawn" data-unit="settler"><span>⚑</span><strong>Spawn Settler</strong></button>
+          <button data-cheat="spawn" data-unit="legion"><span>♜</span><strong>Spawn Legion</strong></button>
+          <button data-cheat="advanceAge"><span>☼</span><strong>Advance Age</strong></button>
+        </div>
+      </div>
+    </section>
+
+    <section id="chronicle-sheet" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="chronicle-title">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header"><div><small>YOUR STORY</small><h2 id="chronicle-title">Chronicle</h2></div><button class="sheet-close" aria-label="Close">×</button></div>
+      <div id="chronicle-list" class="sheet-body chronicle-list"></div>
+    </section>
+
+    <section id="empire-sheet" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="empire-title">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header"><div><small>AURORAN LEAGUE</small><h2 id="empire-title">Empire Overview</h2></div><button class="sheet-close" aria-label="Close">×</button></div>
+      <div id="empire-content" class="sheet-body"></div>
+    </section>
+
+    <section id="menu-sheet" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="menu-title">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header"><div><small>CAMPAIGN</small><h2 id="menu-title">Game Menu</h2></div><button class="sheet-close" aria-label="Close">×</button></div>
+      <div class="sheet-body menu-list">
+        <button id="save-game"><span>▣</span><span><strong>Save Campaign</strong><small>Store this game on this device</small></span></button>
+        <button id="how-to-play"><span>?</span><span><strong>How to Play</strong><small>Touch controls and victory goals</small></span></button>
+        <button id="menu-new-game"><span>↻</span><span><strong>New Campaign</strong><small>Leave this world and start again</small></span></button>
+        <button id="return-title"><span>⌂</span><span><strong>Return to Title</strong><small>Your game will be saved first</small></span></button>
+      </div>
+    </section>
+
+    <section id="help-sheet" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="help-title">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header"><div><small>FIELD MANUAL</small><h2 id="help-title">How to Play</h2></div><button class="sheet-close" aria-label="Close">×</button></div>
+      <div class="sheet-body help-copy">
+        <h3>Touch controls</h3>
+        <p>Tap a unit, then tap an adjacent hex to move or attack. Drag the map to pan. Pinch or use +/− to zoom. Tap a city to choose its production.</p>
+        <h3>Grow your empire</h3>
+        <p>Cities collect food, production, gold, science, and culture from nearby terrain. Settlers found new cities at least three hexes apart. Research unlocks stronger projects.</p>
+        <h3>Win the campaign</h3>
+        <p>Capture every rival city for a Domination Victory, complete Future Flight for a Science Victory, or hold the highest score after turn 80.</p>
+        <h3>Command Console</h3>
+        <p>The console is deliberately available in offline single-player. Its commands are stored with the save so you always know whether a toggle is active.</p>
+      </div>
+    </section>
+
+    <section id="victory-sheet" class="sheet victory-sheet hidden" role="dialog" aria-modal="true" aria-labelledby="victory-title">
+      <div class="victory-rays"></div>
+      <div class="sheet-body victory-content">
+        <small>THE CHRONICLE RECORDS</small>
+        <h2 id="victory-title">Victory</h2>
+        <p id="victory-copy"></p>
+        <div id="victory-scores" class="score-list"></div>
+        <button id="victory-new-game" class="primary-button wide">Begin Another Campaign</button>
+      </div>
+    </section>
+
+    <div id="toast" class="toast hidden" role="status"></div>
+    <div id="age-banner" class="age-banner hidden"><small>A NEW ERA DAWNS</small><strong></strong><span></span></div>
+  </div>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

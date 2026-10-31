@@ -1,0 +1,32 @@
+{
+  "name": "empire-command-mobile",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A clean-room, touch-first pocket 4X strategy game for Android, iOS, and the web.",
+  "scripts": {
+    "start": "node scripts/serve.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "check": "node --check www/js/data.js && node --check www/js/engine.js && node --check www/js/app.js && node --check www/service-worker.js",
+    "verify": "npm run check && npm test",
+    "test:browser": "node scripts/browser-smoke.mjs",
+    "mobile:sync": "npx cap sync",
+    "android:add": "npx cap add android",
+    "android:open": "npx cap open android",
+    "ios:add": "npx cap add ios",
+    "ios:open": "npx cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/core": "^8.0.0",
+    "@capacitor/ios": "^8.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^4.0.0",
+    "@capacitor/cli": "^8.0.0",
+    "playwright-core": "^1.64.1"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
